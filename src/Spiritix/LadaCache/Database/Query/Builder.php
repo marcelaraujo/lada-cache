@@ -9,10 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Spiritix\LadaCache\Database;
+namespace Spiritix\LadaCache\Database\Query;
 
 use Illuminate\Database\ConnectionInterface;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 use Spiritix\LadaCache\QueryHandler;
@@ -23,7 +22,7 @@ use Spiritix\LadaCache\QueryHandler;
  * @package Spiritix\LadaCache\Database
  * @author  Matthias Isler <mi@matthias-isler.ch>
  */
-class QueryBuilder extends Builder
+class Builder extends \Illuminate\Database\Query\Builder
 {
     /**
      * Handler instance.
@@ -33,6 +32,13 @@ class QueryBuilder extends Builder
     private $handler;
 
     /**
+     * The number of minutes to cache the query.
+     *
+     * @var int
+     */
+    protected $cacheSeconds;
+
+    /**
      * Create a new query builder instance.
      *
      * @param  ConnectionInterface $connection
@@ -40,8 +46,7 @@ class QueryBuilder extends Builder
      * @param  Processor           $processor
      * @param  QueryHandler        $handler
      */
-    public function __construct(ConnectionInterface $connection, Grammar $grammar, Processor $processor,
-                                QueryHandler $handler)
+    public function __construct(ConnectionInterface $connection, Grammar $grammar, Processor $processor, QueryHandler $handler)
     {
         parent::__construct($connection, $grammar, $processor);
 
@@ -51,7 +56,7 @@ class QueryBuilder extends Builder
     /**
      * Get a new instance of the query builder.
      *
-     * @return QueryBuilder
+     * @return Builder
      */
     public function newQuery()
     {
@@ -65,7 +70,7 @@ class QueryBuilder extends Builder
      */
     protected function runSelect()
     {
-        return $this->handler->setBuilder($this)->cacheQuery(function() {
+        return $this->handler->setBuilder($this)->cacheQuery($this->cacheSeconds, function() {
             return parent::runSelect();
         });
     }
@@ -81,8 +86,7 @@ class QueryBuilder extends Builder
     {
         $result = parent::insert($values);
 
-        $this->handler->setBuilder($this)
-            ->invalidateQuery('insert');
+        $this->handler->setBuilder($this)->invalidateQuery('insert');
 
         return $result;
     }
@@ -99,8 +103,7 @@ class QueryBuilder extends Builder
     {
         $result = parent::insertGetId($values, $sequence);
 
-        $this->handler->setBuilder($this)
-            ->invalidateQuery('insertGetId');
+        $this->handler->setBuilder($this)->invalidateQuery('insertGetId');
 
         return $result;
     }
@@ -116,8 +119,7 @@ class QueryBuilder extends Builder
     {
         $result = parent::update($values);
 
-        $this->handler->setBuilder($this)
-            ->invalidateQuery('update');
+        $this->handler->setBuilder($this)->invalidateQuery('update');
 
         return $result;
     }
@@ -133,8 +135,7 @@ class QueryBuilder extends Builder
     {
         $result = parent::delete($id);
 
-        $this->handler->setBuilder($this)
-            ->invalidateQuery('delete');
+        $this->handler->setBuilder($this)->invalidateQuery('delete');
 
         return $result;
     }
@@ -146,7 +147,19 @@ class QueryBuilder extends Builder
     {
         parent::truncate();
 
-        $this->handler->setBuilder($this)
-            ->invalidateQuery('truncate');
+        $this->handler->setBuilder($this)->invalidateQuery('truncate');
+    }
+
+    /**
+     * Indicate that the query results should be cached.
+     *
+     * @param  \DateTime|int  $minutes
+     * @param  string  $key
+     * @return $this
+     */
+    public function remember($minutes, $key = null)
+    {
+        list($this->cacheMinutes, $this->cacheKey) = [$minutes, $key];
+        return $this;
     }
 }

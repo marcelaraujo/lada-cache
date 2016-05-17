@@ -12,7 +12,7 @@
 namespace Spiritix\LadaCache;
 
 use ReflectionException;
-use Spiritix\LadaCache\Database\QueryBuilder;
+use Spiritix\LadaCache\Database\Query\Builder as QueryBuilder;
 use Spiritix\LadaCache\Debug\CacheCollector;
 
 /**
@@ -80,11 +80,12 @@ class QueryHandler
     /**
      * Caches a query and returns its result.
      *
+     * @param $expirationTime
      * @param callable $queryClosure A closure which executes the query and returns the result
      *
      * @return array
      */
-    public function cacheQuery($queryClosure)
+    public function cacheQuery($expirationTime, $queryClosure)
     {
         $this->constructCollector();
 
@@ -119,7 +120,7 @@ class QueryHandler
         if ($result === null) {
             $result = $queryClosure();
 
-            $this->cache->set($key, $tagger->getTags(), $result);
+            $this->cache->set($key, $tagger->getTags(), $result, $expirationTime);
         }
 
         $this->destructCollector($reflector, $tagger, $key, $action);

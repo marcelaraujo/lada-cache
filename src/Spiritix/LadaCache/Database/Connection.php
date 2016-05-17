@@ -11,6 +11,7 @@
 
 namespace Spiritix\LadaCache\Database;
 
+use Spiritix\LadaCache\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Connection as IlluminateConnection;
 
 /**

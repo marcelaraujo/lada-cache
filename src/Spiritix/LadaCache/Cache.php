@@ -38,7 +38,7 @@ class Cache
      *
      * @var null|int
      */
-    private $expirationTime;
+    //private $expirationTime;
 
     /**
      * Initialize cache.
@@ -52,7 +52,7 @@ class Cache
         $this->redis = $redis;
         $this->encoder = $encoder;
 
-        $this->expirationTime = config('lada-cache.expiration-time');
+        //$this->expirationTime = config('lada-cache.expiration-time');
     }
 
     /**
@@ -74,16 +74,17 @@ class Cache
      * Use has() to prevent this issue.
      *
      * @param string $key
-     * @param array  $tags
-     * @param mixed  $data
+     * @param array $tags
+     * @param mixed $data
+     * @param int $expirationTime
      */
-    public function set($key, array $tags, $data)
+    public function set($key, array $tags, $data, $expirationTime = 3600)
     {
         $key = $this->redis->prefix($key);
         $this->redis->set($key, $this->encoder->encode($data));
 
-        if (is_int($this->expirationTime) && $this->expirationTime > 0) {
-            $this->redis->expire($key, $this->expirationTime);
+        if (is_int($expirationTime) && $expirationTime > 0) {
+            $this->redis->expire($key, $expirationTime);
         }
 
         foreach ($tags as $tag) {

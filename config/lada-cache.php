@@ -34,7 +34,7 @@ return [
     | be a good idea to set this value to something like 604800 (7 days).
     |
     */
-    'expiration-time' => null,
+    //'expiration-time' => null,
 
     /*
     |--------------------------------------------------------------------------

@@ -10,7 +10,7 @@
  */
 namespace Spiritix\LadaCache\Database;
 
-use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Spiritix\LadaCache\Database\Query\Builder as QueryBuilder;
 
 /**
  * Overrides Laravel's model class.
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
  * @package Spiritix\LadaCache\Database
  * @author  Matthias Isler <mi@matthias-isler.ch>
  */
-class Model extends EloquentModel
+trait Remember
 {
     /**
      * Get a new query builder instance for the connection.

@@ -11,7 +11,7 @@
 
 namespace Spiritix\LadaCache;
 
-use Spiritix\LadaCache\Database\QueryBuilder;
+use Spiritix\LadaCache\Database\Query\Builder as QueryBuilder;
 
 /**
  * Query builder reflector provides information about an Eloquent query builder object.
