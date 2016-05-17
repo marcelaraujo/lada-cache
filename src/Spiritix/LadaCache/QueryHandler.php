@@ -80,12 +80,13 @@ class QueryHandler
     /**
      * Caches a query and returns its result.
      *
-     * @param $expirationTime
+     * @param int $cacheSeconds
+     * @param mixed $cacheKey
      * @param callable $queryClosure A closure which executes the query and returns the result
      *
      * @return array
      */
-    public function cacheQuery($expirationTime, $queryClosure)
+    public function cacheQuery($cacheSeconds, $cacheKey, $queryClosure)
     {
         $this->constructCollector();
 
@@ -107,7 +108,7 @@ class QueryHandler
         $tagger = app()->make(Tagger::class, [$reflector, false]);
 
         $result = null;
-        $key = $hasher->getHash();
+        $key = $hasher->getHash($cacheKey);
 
         // Check if a cached version is available
         if ($this->cache->has($key)) {
@@ -120,7 +121,7 @@ class QueryHandler
         if ($result === null) {
             $result = $queryClosure();
 
-            $this->cache->set($key, $tagger->getTags(), $result, $expirationTime);
+            $this->cache->set($key, $tagger->getTags(), $result, $cacheSeconds);
         }
 
         $this->destructCollector($reflector, $tagger, $key, $action);

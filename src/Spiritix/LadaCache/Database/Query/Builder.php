@@ -32,7 +32,14 @@ class Builder extends \Illuminate\Database\Query\Builder
     private $handler;
 
     /**
-     * The number of minutes to cache the query.
+     * The key that should be used when caching the query.
+     *
+     * @var string
+     */
+    protected $cacheKey;
+
+    /**
+     * The number of seconds to cache the query.
      *
      * @var int
      */
@@ -51,6 +58,7 @@ class Builder extends \Illuminate\Database\Query\Builder
         parent::__construct($connection, $grammar, $processor);
 
         $this->handler = $handler;
+        $this->cacheSeconds = (int) config('lada-cache.expiration-time', 3600);
     }
 
     /**
@@ -70,7 +78,7 @@ class Builder extends \Illuminate\Database\Query\Builder
      */
     protected function runSelect()
     {
-        return $this->handler->setBuilder($this)->cacheQuery($this->cacheSeconds, function() {
+        return $this->handler->setBuilder($this)->cacheQuery($this->cacheSeconds, $this->cacheKey, function() {
             return parent::runSelect();
         });
     }
@@ -153,13 +161,24 @@ class Builder extends \Illuminate\Database\Query\Builder
     /**
      * Indicate that the query results should be cached.
      *
-     * @param  \DateTime|int  $minutes
+     * @param  \DateTime|int $seconds
      * @param  string  $key
      * @return $this
      */
-    public function remember($minutes, $key = null)
+    public function remember($seconds, $key = null)
     {
-        list($this->cacheMinutes, $this->cacheKey) = [$minutes, $key];
+        list($this->cacheSeconds, $this->cacheKey) = [$seconds, $key];
         return $this;
+    }
+
+    /**
+     * Indicate that the query results should be cached forever.
+     *
+     * @param  string  $key
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function rememberForever($key = null)
+    {
+        return $this->remember($this->cacheSeconds, $key);
     }
 }

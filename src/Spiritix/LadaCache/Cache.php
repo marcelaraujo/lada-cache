@@ -34,13 +34,6 @@ class Cache
     protected $encoder;
 
     /**
-     * Cache expiration time.
-     *
-     * @var null|int
-     */
-    //private $expirationTime;
-
-    /**
      * Initialize cache.
      *
      * @param Redis   $redis
@@ -51,8 +44,6 @@ class Cache
     {
         $this->redis = $redis;
         $this->encoder = $encoder;
-
-        //$this->expirationTime = config('lada-cache.expiration-time');
     }
 
     /**
@@ -78,7 +69,7 @@ class Cache
      * @param mixed $data
      * @param int $expirationTime
      */
-    public function set($key, array $tags, $data, $expirationTime = 3600)
+    public function set($key, array $tags, $data, $expirationTime)
     {
         $key = $this->redis->prefix($key);
         $this->redis->set($key, $this->encoder->encode($data));

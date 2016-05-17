@@ -39,16 +39,19 @@ class Hasher
     /**
      * Returns the hash.
      *
+     * @param string $key
+     *
      * @return string
      */
-    public function getHash()
+    public function getHash($key = null)
     {
         // Never remove the database from the identifier
         // Most SQL queries do not include the target database
-        $identifier = $this->reflector->getDatabase() .
+        $identifier = $key .
+                      $this->reflector->getDatabase() .
                       $this->reflector->getSql() .
                       serialize($this->reflector->getParameters());
 
-        return md5($identifier);
+        return sha1($identifier);
     }
 }

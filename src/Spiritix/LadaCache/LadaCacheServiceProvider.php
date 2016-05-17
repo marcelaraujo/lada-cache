@@ -11,6 +11,7 @@
 
 namespace Spiritix\LadaCache;
 
+use Cartalyst\Sentinel\Native\Facades\Sentinel;
 use Illuminate\Support\ServiceProvider;
 use Spiritix\LadaCache\Console\DisableCommand;
 use Spiritix\LadaCache\Console\EnableCommand;
@@ -84,20 +85,24 @@ class LadaCacheServiceProvider extends ServiceProvider
      */
     private function registerSingletons()
     {
-        $redis = new Redis(config('lada-cache.prefix'));
-        $cache = new Cache($redis, new Encoder());
-        $invalidator = new Invalidator($redis);
-
-        $this->app->singleton('lada.cache', function() use ($cache) {
-            return $cache;
+        $this->app->singleton('lada.redis', function() {
+            return new Redis(config('lada-cache.prefix'));
         });
 
-        $this->app->singleton('lada.invalidator', function() use ($invalidator) {
-            return $invalidator;
+        $this->app->singleton('lada.encoder', function($app) {
+            return new Encoder($app['lada.redis']);
         });
 
-        $this->app->singleton('lada.handler', function() use ($cache, $invalidator) {
-            return new QueryHandler($cache, $invalidator);
+        $this->app->singleton('lada.cache', function($app) {
+            return new Cache($app['lada.redis'], $app['lada.encoder']);
+        });
+
+        $this->app->singleton('lada.invalidator', function($app) {
+            return new Invalidator($app['lada.redis']);
+        });
+
+        $this->app->singleton('lada.handler', function($app) {
+            return new QueryHandler($app['lada.cache'], $app['lada.invalidator']);
         });
     }
 

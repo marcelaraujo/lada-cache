@@ -11,7 +11,7 @@ return [
     | This may be useful for debugging purposes.
     |
     */
-    'active' => env('LADA_CACHE_ACTIVE', true),
+    'active' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -34,7 +34,7 @@ return [
     | be a good idea to set this value to something like 604800 (7 days).
     |
     */
-    //'expiration-time' => null,
+    'expiration-time' => 1200,
 
     /*
     |--------------------------------------------------------------------------
